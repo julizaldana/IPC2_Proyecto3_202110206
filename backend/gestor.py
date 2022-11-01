@@ -1,5 +1,6 @@
 from instancia.models.instancia import Instancia
 import json
+import datetime
 
 
 class Gestor:
@@ -7,6 +8,7 @@ class Gestor:
         self.clientes = []
         self.nitclientes = []
         self.instancias = []
+        self.idinstancias = []
 
 
 ## FUNCIONES PARA CLIENTES
@@ -30,10 +32,21 @@ class Gestor:
 
 ## FUNCIONES PARA INSTANCIAS
 
-    def crear_instancia(self,id,nombre,fecha_inicial,fecha_final,estado):
-        nuevainstancia = Instancia(id,nombre,fecha_inicial,fecha_final,estado)
-        self.instancias.append(nuevainstancia)
-        return True
+    def crear_instancia(self,instancia):
+        if not(instancia.getidinstancia() in self.idinstancias):
+            self.instancias.append(instancia)
+            self.idinstancias.append(instancia.getidinstancia())
+            return True
+        return False
+
+
+    def validar_fecha(date_text):
+        try:
+            datetime.datetime.strptime(date_text, '%d/%m/%y')
+        except ValueError:
+            raise ValueError("El formato debe de ser YYYY/MM/DD")
+
+
 
 
     #def modificar_instancia(self,id,nombre,fecha_inicial,fecha_final,estado):

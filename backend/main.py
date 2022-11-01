@@ -3,6 +3,7 @@ from flask import Flask, request
 from flask_cors import CORS
 from flask.json import jsonify
 from cliente.models.cliente import Cliente
+from instancia.models.instancia import Instancia
 
 from gestor import Gestor
 from xml.etree import ElementTree as ET
@@ -26,7 +27,7 @@ def crearCliente():
         if("nit" in body and "nombre" in body and "usuario" in  body and "clave" in body and "direccion" in body and "email" in body):
             cliente = Cliente(body["nit"], body["nombre"],body["usuario"],body["clave"],body["direccion"],body["email"])
             if(gestor.agregar_cliente(cliente)):
-                return{'msg': "Cliente creado existosamente"}, 201 #created
+                return{'msg': "Cliente creado exitosamente"}, 201 #created
             else:
                 return{'msg': 'El NIT ya se encuentra registrado.'}, 406 #not acceptable
         else:
@@ -46,7 +47,7 @@ def ver(nit):
             return {'msg': 'No se encontró el cliente'}, 404
     except:
         return {'msg': 'Ocurrió un error en el servidor'}, 500
-        
+
 
 tree = ET.parse('ArchivoConfig.xml')
 root = tree.getroot()
@@ -68,12 +69,33 @@ def crearClientes():
 
 #METODOS PARA INSTANCIAS
 
-
+'''
 @app.route('/crearInstancia', methods=['POST'])
 def crearInstancia():
     json=request.get_json()
     gestor.crear_instancia(json['id'],json['nombre'],json['idconfig'],json['fecha_inicial'],json['fecha_final'],json['estado'])
     return jsonify({'ok': True, 'msg':'Instancia creada con exito'}),201
+'''
+
+
+@app.route('/crearInstancia', methods = ['POST'])
+def crearInstancia():
+    body = request.get_json()
+    try:
+        if("id" in body and "nombre" in body and "idconfig" in  body and "fecha_inicial" in body and "fecha_final" in body and "estado" in body):
+            instancia = Instancia(body['id'],body['nombre'],body['idconfig'],body['fecha_inicial'],body['fecha_final'],body['estado'])
+            if(gestor.crear_instancia(instancia)):
+                return{'msg': "Instancia creada exitosamente"}, 201 #created
+            else:
+                return{'msg': 'La instancia con ese id ya se encuentra registrado.'}, 406 #not acceptable
+        else:
+            return{'msg': 'Faltan campos por rellenar'},400 #bad request
+    except:
+        return {'msg': 'Ocurrió un error en el servidor'},500
+ 
+
+
+
 
 '''
 @app.route('/consultarDatos/instancia', methods=['GET']) #-> consultarDatos GET
