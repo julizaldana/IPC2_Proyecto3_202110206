@@ -7,7 +7,7 @@ class Instancia():
         self.fecha_final = fecha_final
         self.estado = estado
 
-    def getidinstancia(self):
+    def getIdinstancia(self):
         return self.id
         
     def getnombre(self):

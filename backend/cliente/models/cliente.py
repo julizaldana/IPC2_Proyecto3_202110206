@@ -6,6 +6,11 @@ class Cliente():
         self.__clave = clave
         self.__direccion = direccion
         self.__email = email
+        self.instancias=[]
+
+
+    def añadirInstancia(self, instancia):
+        self.instancias.append(instancia)
 
     def getnit(self):
         return self.__nit
@@ -25,14 +30,25 @@ class Cliente():
     def getemail(self):
         return self.__email
 
-    def getdatos(self):
+
+    def getInstancia(self, idInstancia):
+        for instancia in self.instancias:
+            if instancia.getIdinstancia() == idInstancia:
+                return instancia
+        return None
+
+
+
+    def getData(self):
+        list_instancias = []
         return{
             "nit": self.__nit,
             "nombre": self.__nombre,
             "usuario": self.__usuario,
             "clave": self.__clave,
             "direccion": self.__direccion,
-            "email": self.__email
+            "email": self.__email,
+            "instancias": list_instancias
         }
 
 

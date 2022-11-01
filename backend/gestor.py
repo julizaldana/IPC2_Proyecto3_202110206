@@ -19,20 +19,13 @@ class Gestor:
         return False
 
 
-    def obtener_clientes(self, nit):
-        json=[]
-        if nit in self.nitclientes:
-            for i in self.clientes:
-                cliente={
-                   "nit": i.nit,
-                    "nombre": i.nombre,
-                    "usuario": i.usuario,
-                    "clave": i.clave,
-                    "direccion": i.direccion,
-                    "email": i.email
-                }
-                json.append(cliente)
-            return json
+    def obtener_clientes(self, nitClient):
+        if int(nitClient) in self.nitclientes:
+            for client in self.clientes:
+                if client.getnit() == int(nitClient):
+                    return client
+        return None
+
 
 
 ## FUNCIONES PARA INSTANCIAS
@@ -41,6 +34,13 @@ class Gestor:
         nuevainstancia = Instancia(id,nombre,fecha_inicial,fecha_final,estado)
         self.instancias.append(nuevainstancia)
         return True
+
+
+    #def modificar_instancia(self,id,nombre,fecha_inicial,fecha_final,estado):
+
+    
+    #def eliminar_instancia(self,id,nombre,fecha_inicial,fecha_final,estado):
+
 
 
 
