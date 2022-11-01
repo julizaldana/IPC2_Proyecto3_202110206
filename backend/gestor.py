@@ -1,4 +1,4 @@
-from instancia import Instancia
+from instancia.models.instancia import Instancia
 import json
 
 
@@ -18,13 +18,21 @@ class Gestor:
             return True
         return False
 
-    def obtener_clientes(self,nit):
-        if nit in self.nitclientes:
-            for client in self.clientes:
-                if(client.getnit() == nit):
-                    return client
-        return None
 
+    def obtener_clientes(self, nit):
+        json=[]
+        if nit in self.nitclientes:
+            for i in self.clientes:
+                cliente={
+                   "nit": i.nit,
+                    "nombre": i.nombre,
+                    "usuario": i.usuario,
+                    "clave": i.clave,
+                    "direccion": i.direccion,
+                    "email": i.email
+                }
+                json.append(cliente)
+            return json
 
 
 ## FUNCIONES PARA INSTANCIAS
@@ -40,12 +48,12 @@ class Gestor:
         json=[]
         for i in self.instancias:
             instancia={
-                "nit": i.id,
+                "id": i.id,
                 "nombre": i.nombre,
-                "usuario": i.usuario,
-                "clave": i.clave,
-                "direccion": i.direccion,
-                "email": i.email
+                "idconfig": i.idconfig,
+                "fecha_inicial": i.fecha_inicial,
+                "fecha_final": i.fecha_final,
+                "estado": i.estado
             }
             json.append(instancia)
         return json

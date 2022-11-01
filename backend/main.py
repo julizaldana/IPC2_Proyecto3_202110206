@@ -36,23 +36,13 @@ def crear():
  
 
 
-
-@app.route('/obtenerClientes', methods = ['GET'])
-def ver(nit):
-    if(nit != None):
-        historialp = gestor.obtener_clientes(nit)
-        if(historialp != None):
-            return jsonify(historialp), 200 #ok
-        else:
-            return{'msg': 'No se ha encontrado el NIT en los datos registrados'}, 404 #not found
-    else:
-        return{'msg': 'Los campos deben tener contenido.'}, 400 #bad request
-
-
 @app.route('/obtenerClientes', methods=['GET'])
-def get_clientes():
-    client=gestor.obtener_clientes()
-    return jsonify(client),200
+def get_clientes(nit):
+    client=gestor.obtener_clientes(nit)
+    if (client!=None):
+        return jsonify(client),200
+    else: 
+        return{'msg': 'No se ha encontrado el NIT en el registro'}
 
 
 
@@ -84,7 +74,7 @@ def crearClientes():
         email = clientes.find('correoElectronico').text
         gestor.agregar_cliente(nit,nombre,usuario,clave,direccion,email)
         return jsonify({'ok':True, 'msg':'Clientes cargados con exito'}),200
-
+'''
 
 #METODOS PARA INSTANCIAS
 
@@ -92,11 +82,40 @@ def crearClientes():
 @app.route('/crearInstancia', methods=['POST'])
 def crearInstancia():
     json=request.get_json()
+    gestor.crear_instancia(json['id'],json['nombre'],json['idconfig'],json['fecha_inicial'],json['fecha_final'],json['estado'])
+    return jsonify({'ok': True, 'msg':'Instancia creada con exito'}),201
+
+
+@app.route('/obtenerInstancias', methods=['GET']) #-> consultarDatos GET
+def crearInstancia():
+    json=request.get_json()
     gestor.crear_instancia(json['id'],json['nombre'],json['fecha_inicial'],json['fecha_final'],json['estado'])
     return jsonify({'ok': True, 'msg':'Instancia creada con exito'}),201
 
 
-'''
-
 if __name__ == '__main__':
     app.run(debug = True)
+
+
+#---MODIFICAR Y ELIMINAR instancias
+
+
+
+# METODOS PARA RECURSOS
+
+
+
+
+# METODOS PARA CATEGORIAS
+
+
+
+
+# METODOS PARA CONFIGURACIONES
+
+
+
+
+
+#METODOS PARA GENERACION DE FACTURA
+
