@@ -1,8 +1,8 @@
 import json
 from flask import Flask, request
 from flask_cors import CORS
-from cliente.routes.cliente_Route import cliente
 from flask.json import jsonify
+from cliente.models.cliente import Cliente
 
 from gestor import Gestor
 from xml.etree import ElementTree as ET
@@ -17,26 +17,86 @@ def index():
     return {"msg" : "This api works!"}
 
 
+#METODOS PARA CLIENTES
+
+@app.route('/crearCliente', methods = ['POST'])
+def crear():
+    body = request.get_json()
+    if("nit" in body and "nombre" in body and "usuario" in  body and "clave" in body and "direccion" in body and "email" in body):
+        if(body["nit"] != "" and body["nombre"] != "" and body["usuario"] != "" and body["clave"] != "" and body["direccion"] != "" and body["email"] != ""):
+            cliente = Cliente(body["nit"], body["nombre"],body["usuario"],body["clave"],body["direccion"],body["email"])
+            if(gestor.agregar_cliente(cliente)):
+                return{'msg': "Cliente creado existosamente"}, 201 #created
+            else:
+                return{'msg': 'El NIT ya se encuentra registrado.'}, 406 #not acceptable
+        else:
+            return{'msg': 'Los campos deben tener contenido.'}, 400 #bad request
+    else:
+        return{'msg': 'Asegurese de introducir correctamente TODOS los campos'},400 #bad request
+ 
+
+
+
+@app.route('/obtenerClientes', methods = ['GET'])
+def ver(nit):
+    if(nit != None):
+        historialp = gestor.obtener_clientes(nit)
+        if(historialp != None):
+            return jsonify(historialp), 200 #ok
+        else:
+            return{'msg': 'No se ha encontrado el NIT en los datos registrados'}, 404 #not found
+    else:
+        return{'msg': 'Los campos deben tener contenido.'}, 400 #bad request
+
+
+@app.route('/obtenerClientes', methods=['GET'])
+def get_clientes():
+    client=gestor.obtener_clientes()
+    return jsonify(client),200
+
+
+
+
+
+
+
+'''
 @app.route('/crearCliente', methods=['POST'])
 def crearCliente():
     json=request.get_json()
     gestor.agregar_cliente(json['nit'],json['nombre'],json['usuario'],json['clave'],json['direccion'],json['email'])
     return jsonify({'ok': True, 'msg':'Cliente agregado con exito'}),201
 
+  
 
-@app.route('/obtenerClientes', methods=['GET'])
-def get_clientes():
-    c=gestor.obtener_clientes()
-    return jsonify(c),200
 
-@app.route('/eliminarCliente', methods=['DELETE'])
-def eliminarCliente():
+#Cargar archivo
+@app.route('/crearClientes', methods=['POST'])
+def crearClientes():
+    xml = request.get_data().decode('utf-8')
+    raiz=ET.XML(xml)
+    for clientes in raiz.iter('cliente'):
+        nit = clientes.get('nit')
+        nombre = clientes.find('nombre').text
+        usuario = clientes.find('usuario').text
+        clave = clientes.find('clave').text
+        direccion = clientes.find('direccion').text
+        email = clientes.find('correoElectronico').text
+        gestor.agregar_cliente(nit,nombre,usuario,clave,direccion,email)
+        return jsonify({'ok':True, 'msg':'Clientes cargados con exito'}),200
+
+
+#METODOS PARA INSTANCIAS
+
+
+@app.route('/crearInstancia', methods=['POST'])
+def crearInstancia():
     json=request.get_json()
-    gestor.eliminar_cliente(json['nit'],json['nombre'],json['usuario'],json['clave'],json['direccion'],json['email'])
-    return jsonify({'ok': True, 'msg':'Cliente eliminado con exito'}),20
+    gestor.crear_instancia(json['id'],json['nombre'],json['fecha_inicial'],json['fecha_final'],json['estado'])
+    return jsonify({'ok': True, 'msg':'Instancia creada con exito'}),201
 
 
-
+'''
 
 if __name__ == '__main__':
     app.run(debug = True)
