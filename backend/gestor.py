@@ -8,6 +8,10 @@ class Gestor:
         self.clientes = []
         self.nitclientes = []
         self.instancias = []
+        self.recursos = []
+        self.configuraciones= []
+        self.categorias = []
+        self.consumos = []
 
 
 
@@ -64,3 +68,34 @@ class Gestor:
             }
             json.append(instancia)
         return json
+
+
+## FUNCIONES PARA CATEGORIAS
+
+    def crear_categoria(self,categoria):
+        self.categorias.append(categoria)
+        return True
+
+
+## FUNCIONES PARA CONFIGURACIONES
+
+    def crear_configuracion(self,configuracion):
+        self.configuraciones.append(configuracion)
+        return True
+
+
+## FUNCIONES PARA RECURSOS
+
+    def crear_recurso(self,recurso):
+        self.recursos.append(recurso)
+        return True
+
+    #def asignar_recurso(self, idconfiguracion, idrecurso, cantidad):
+
+
+# FUNCIONES PARA CONSUMOS
+
+
+    def crear_consumo(self,consumo):
+        self.consumos.append(consumo)
+        return True

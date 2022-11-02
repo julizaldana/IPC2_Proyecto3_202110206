@@ -12,3 +12,10 @@ class Configuracion():
         return self.nombre
 
 
+    def getData(self):
+        return{
+            "id": self.id,
+            "nombre": self.nombre,
+            "descripcion": self.descripcion,
+            "cant_recursos": self.cant_recursos
+        }
