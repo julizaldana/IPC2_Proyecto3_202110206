@@ -8,7 +8,7 @@ class Gestor:
         self.clientes = []
         self.nitclientes = []
         self.instancias = []
-        self.idinstancias = []
+
 
 
 ## FUNCIONES PARA CLIENTES
@@ -33,12 +33,8 @@ class Gestor:
 ## FUNCIONES PARA INSTANCIAS
 
     def crear_instancia(self,instancia):
-        if not(instancia.getidinstancia() in self.idinstancias):
-            self.instancias.append(instancia)
-            self.idinstancias.append(instancia.getidinstancia())
-            return True
-        return False
-
+        self.instancias.append(instancia)
+        return True
 
     def validar_fecha(date_text):
         try:
@@ -55,18 +51,16 @@ class Gestor:
     #def eliminar_instancia(self,id,nombre,fecha_inicial,fecha_final,estado):
 
 
-
-
-    def obtener_instancias(self, nit):
+    def obtener_instancias(self):
         json=[]
-        for i in self.instancias:
+        for ins in self.instancias:
             instancia={
-                "id": i.id,
-                "nombre": i.nombre,
-                "idconfig": i.idconfig,
-                "fecha_inicial": i.fecha_inicial,
-                "fecha_final": i.fecha_final,
-                "estado": i.estado
+                'id': ins.id,
+                'nombre': ins.nombre,
+                'idconfig': ins.idconfig,
+                'fecha_inicial': ins.fecha_inicial,
+                'fecha_final': ins.fecha_final,
+                'estado': ins.estado
             }
             json.append(instancia)
         return json

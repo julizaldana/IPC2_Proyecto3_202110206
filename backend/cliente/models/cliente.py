@@ -9,7 +9,7 @@ class Cliente():
         self.instancias=[]
 
 
-    def añadirInstancia(self, instancia):
+    def crear_instancia(self, instancia):
         self.instancias.append(instancia)
 
     def getnit(self):
@@ -41,6 +41,8 @@ class Cliente():
 
     def getData(self):
         list_instancias = []
+        for ins in self.instancias:
+            list_instancias.append(ins.getData())
         return{
             "nit": self.__nit,
             "nombre": self.__nombre,

@@ -82,12 +82,15 @@ def crearInstancia():
 def crearInstancia():
     body = request.get_json()
     try:
-        if("id" in body and "nombre" in body and "idconfig" in  body and "fecha_inicial" in body and "fecha_final" in body and "estado" in body):
-            instancia = Instancia(body['id'],body['nombre'],body['idconfig'],body['fecha_inicial'],body['fecha_final'],body['estado'])
-            if(gestor.crear_instancia(instancia)):
+        if("id" in body and "nombre" in body and "idconfig" in  body and "fecha_inicial" in body and "fecha_final" in body and "estado" in body and "nit" in body):
+            cliente = gestor.obtener_clientes((body["nit"]))
+            if (cliente != None):
+                instancia = Instancia(body['id'],body['nombre'],body['idconfig'],body['fecha_inicial'],body['fecha_final'],body['estado'],body['nit'])
+                cliente.crear_instancia(instancia)                
+                gestor.crear_instancia(instancia)
                 return{'msg': "Instancia creada exitosamente"}, 201 #created
             else:
-                return{'msg': 'La instancia con ese id ya se encuentra registrado.'}, 406 #not acceptable
+                return{'msg': 'Cliente con nit ingresado no existe'}, 406 #not acceptable
         else:
             return{'msg': 'Faltan campos por rellenar'},400 #bad request
     except:
@@ -95,24 +98,10 @@ def crearInstancia():
  
 
 
-
-
-'''
 @app.route('/consultarDatos/instancia', methods=['GET']) #-> consultarDatos GET
-def crearInstancia():
-    json=request.get_json()
-    gestor.crear_instancia(json['id'],json['nombre'],json['fecha_inicial'],json['fecha_final'],json['estado'])
-    return jsonify({'ok': True, 'msg':'Instancia creada con exito'}),201
-'''
-
-if __name__ == '__main__':
-    app.run(debug = True)
-
-
-#---MODIFICAR Y ELIMINAR instancias
-
-
-
+def get_instancias():
+    c=gestor.obtener_instancias()
+    return jsonify(c),200
 
 
 
@@ -134,3 +123,9 @@ if __name__ == '__main__':
 
 #METODOS PARA GENERACION DE FACTURA
 
+
+
+
+
+if __name__ == '__main__':
+    app.run(debug = True)
