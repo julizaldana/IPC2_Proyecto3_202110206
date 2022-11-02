@@ -125,6 +125,11 @@ def crearRecurso():
         return {'msg': 'Ocurrió un error en el servidor'},500
  
 
+@app.route('/consultarDatos/recurso', methods=['GET']) #-> consultarDatos GET
+def get_recursos():
+    c=gestor.obtener_recursos()
+    return jsonify(c),200
+
 
 
 # METODOS PARA CATEGORIAS
@@ -143,6 +148,12 @@ def crearCategoria():
         return {'msg': 'Ocurrió un error en el servidor'},500
  
 
+@app.route('/consultarDatos/categoria', methods=['GET']) #-> consultarDatos GET
+def get_categorias():
+    c=gestor.obtener_categorias()
+    return jsonify(c),200
+
+
 
 # METODOS PARA CONFIGURACIONES
 
@@ -159,6 +170,12 @@ def crearConfiguracion():
     except:
         return {'msg': 'Ocurrió un error en el servidor'},500
  
+
+@app.route('/consultarDatos/configuracion', methods=['GET']) #-> consultarDatos GET
+def get_configuracion():
+    c=gestor.obtener_configuracion()
+    return jsonify(c),200
+
 
 # METODOS PARA CONSUMOS
 
@@ -178,7 +195,6 @@ def crearConsumo():
 
 
 
-
 #METODOS PARA GENERACION DE FACTURA
 
 
@@ -191,8 +207,9 @@ def crearConsumo():
 def cargarArchivo():
     xml = request.data.decode('utf-8')
     raiz = ET.XML(xml)
+    body = request.get_json()
     for firstchild in raiz:
-        if(firstchild.tag.lower() == "listarecursos"):
+        if(firstchild.tag.lower() == "listaRecursos"):
             #en lista de recursos
             for recurso in firstchild:
                 id = recurso.attrib["id"]
@@ -206,11 +223,11 @@ def cargarArchivo():
                         metrica = params.text.strip()
                     elif(parametro == "tipo"):
                         tipo = params.text.strip()
-                    elif(parametro == "valorxhora"):
+                    elif(parametro == "valorXhora"):
                         valor = params.text.strip()
-                nuevorecurso = Recurso(id, nombre, abreviatura, metrica, tipo, valor)
+                nuevorecurso = Recurso(body[id], body[nombre], body[abreviatura], body[metrica], body[tipo], body[valor])
                 gestor.crear_recurso(nuevorecurso)
-        elif(firstchild.tag.lower() == "listacategorias"):
+        elif(firstchild.tag.lower() == "listaCategorias"):
             for categoria in firstchild:
                 id = categoria.attrib["id"]
                 for params in categoria:
@@ -219,10 +236,10 @@ def cargarArchivo():
                         nombre = params.text.strip()
                     elif(parametro == "descripcion"):
                         descripcion = params.text.strip()
-                    elif(parametro == "cargatrabajo"):
+                    elif(parametro == "cargaTrabajo"):
                         cargatrabajo = params.text.strip()
-                    elif(parametro == "listaconfiguraciones"):
-                        nuevacategoria = Categoria(id, nombre, descripcion,cargatrabajo)
+                    elif(parametro == "listaConfiguraciones"):
+                        nuevacategoria = Categoria(body[id], body[nombre], body[descripcion], body[cargatrabajo])
                         gestor.crear_categoria(nuevacategoria)
                         for configs in params:
                             idconfig = configs.attrib["id"]
@@ -232,14 +249,14 @@ def cargarArchivo():
                                 elif(paramconfig.tag == "descripcion"):
                                     descripconfig = paramconfig.text.strip()
                                 elif(paramconfig.tag == "recursosConfiguracion"):
-                                    nuevaconfig = Configuracion(idconfig,nombreconfig, descripconfig)
+                                    nuevaconfig = Configuracion(body[idconfig],body[nombreconfig], body[descripconfig])
                                     gestor.crear_configuracion(nuevaconfig)
                                     for nrecur in paramconfig:
                                         idrecur = nrecur.attrib["id"]
                                         cantidad = nrecur.text.strip()
-                                        gestor.asignar_recurso(idconfig,idrecur,cantidad)
+                                        #gestor.asignar_recurso(idconfig,idrecur,cantidad)
                             #gestor.asignarConfiguracion(id, idconfig)
-        elif(firstchild.tag.lower() == "listaclientes"):
+        elif(firstchild.tag.lower() == "listaClientes"):
             for clientes in firstchild:
                 nit = clientes.attrib["nit"]
                 for params in clientes:
@@ -252,10 +269,10 @@ def cargarArchivo():
                         clave = params.text.strip()
                     elif(parametro == "direccion"):
                         direccion = params.text.strip()
-                    elif(parametro == "correoelectronico"):
+                    elif(parametro == "correoElectronico"):
                         mail = params.text.strip()
-                    elif(parametro == "listainstancias"):
-                        nuevocliente = Cliente(nit, nombre, usuario, clave, direccion, mail)
+                    elif(parametro == "listaInstancias"):
+                        nuevocliente = Cliente(body[nit], body[nombre], body[usuario], body[clave], body[direccion], body[mail])
                         gestor.agregar_cliente(nuevocliente)
                         for instancia in params:
                             idinstancia = instancia.attrib["id"]
@@ -270,13 +287,13 @@ def cargarArchivo():
                                     estado = paraminstancia.text.strip()
                                 elif(paraminstancia.tag == "fechaFinal"):
                                     fechafin = paraminstancia.text.strip()
-                            nuevainstancia = Instancia(idinstancia,nombreins,idconfig, fechainicio,fechafin, estado, nit)
+                            nuevainstancia = Instancia(body[idinstancia],body[nombreins],body[idconfig],body[fechainicio],body[fechafin],body[estado],body[nit])
                             gestor.crear_instancia(nuevainstancia)
     return {'msg': 'Se ha completado la carga de todos los datos'},200
 
 
 
-#CARG DE ARCHIVO DE CONSUMOS
+#CARGA DE ARCHIVO DE CONSUMOS
 @app.route('/cargarConsumos', methods = ['POST'])
 def cargarConsumos():
     xml = request.data.decode('utf-8')
@@ -291,7 +308,7 @@ def cargarConsumos():
                 fechaHora = params.text.strip()
         nuevoconsumo = Consumo(nitcliente, idinstancia, tiempo, fechaHora)
         gestor.crear_consumo(nuevoconsumo)
-    return {'msg': 'Carga completa'}, 200
+    return {'msg': 'Se ha completado la carga de los datos'}, 200
 
 
 

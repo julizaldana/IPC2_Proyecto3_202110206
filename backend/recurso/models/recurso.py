@@ -13,6 +13,19 @@ class Recurso():
     def getnombre(self):
         return self.nombre
     
+    def getabreviatura(self):
+        return self.abreviatura
+
+    def getmetrica(self):
+        return self.metrica
+
+    def gettipo(self):
+        return self.tipo
+
+    def getvalorhora(self):
+        return self.valor_hora
+
+
     def getData(self):
         return{
             "id": self.id,

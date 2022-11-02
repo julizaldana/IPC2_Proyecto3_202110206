@@ -12,6 +12,13 @@ class Categoria():
         return self.nombre
 
 
+    def getdescripcion(self):
+        return self.descripcion
+
+
+    def getcargatrabajo(self):
+        return self.carga_trabajo
+
     def getData(self):
         return{
             "id": self.id,

@@ -11,6 +11,11 @@ class Configuracion():
     def getnombre(self):
         return self.nombre
 
+    def getdescripcion(self):
+        return self.descripcion
+
+    def getcantrecursos(self):
+        return self.cant_recursos
 
     def getData(self):
         return{

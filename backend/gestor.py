@@ -77,11 +77,38 @@ class Gestor:
         return True
 
 
+
+    def obtener_categorias(self):
+        json=[]
+        for ins in self.categorias:
+            categoria={
+                'id': ins.id,
+                'nombre': ins.nombre,
+                'descripcion': ins.descripcion,
+                'carga_trabajo': ins.carga_trabajo
+            }
+            json.append(categoria)
+        return json
+
+
 ## FUNCIONES PARA CONFIGURACIONES
 
     def crear_configuracion(self,configuracion):
         self.configuraciones.append(configuracion)
         return True
+
+    def obtener_configuracion(self):
+        json=[]
+        for ins in self.configuraciones:
+            config={
+                'id': ins.id,
+                'nombre': ins.nombre,
+                'descripcion': ins.descripcion,
+                'cant_recursos': ins.cant_recursos
+            }
+            json.append(config)
+        return json
+
 
 
 ## FUNCIONES PARA RECURSOS
@@ -91,6 +118,20 @@ class Gestor:
         return True
 
     #def asignar_recurso(self, idconfiguracion, idrecurso, cantidad):
+
+    def obtener_recursos(self):
+        json=[]
+        for rec in self.recursos:
+            recurso={
+                'id': rec.id,
+                'nombre': rec.nombre,
+                'abreviatura': rec.abreviatura,
+                'metrica': rec.metrica,
+                'tipo': rec.tipo,
+                'valor_hora': rec.valor_hora
+            }
+            json.append(recurso)
+        return json
 
 
 # FUNCIONES PARA CONSUMOS
