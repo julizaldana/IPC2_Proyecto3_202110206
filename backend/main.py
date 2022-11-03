@@ -263,7 +263,7 @@ def view(factura):
             f.close()
             pdf.add_page()
             pdf.texts('factura.txt')
-            pdf.titles("GENERACIÓN DE FACTURA")
+            pdf.titles("GENERACIÓN DE FACTURA - TECNOLOGÍAS CHAPINAS S.A")
             pdf.set_author('Julio Zaldaña')
             pdf.output('factura.pdf','F')
             return factura.getData(), 200         
