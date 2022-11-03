@@ -11,6 +11,7 @@ class Gestor:
         self.recursos = []
         self.configuraciones= []
         self.categorias = []
+        self.idcategorias = []
         self.consumos = []
         self.facturas = []
 
@@ -73,23 +74,19 @@ class Gestor:
 
 ## FUNCIONES PARA CATEGORIAS
 
-    def crear_categoria(self,categoria):
-        self.categorias.append(categoria)
-        return True
+    def crear_categoria(self, categoria):
+        if not(categoria.getidcategoria() in self.idcategorias):
+            self.categorias.append(categoria)
+            self.idcategorias.append(categoria.getidcategoria())
+            return True
+        return False
 
-
-
-    def obtener_categorias(self):
-        json=[]
-        for ins in self.categorias:
-            categoria={
-                'id': ins.id,
-                'nombre': ins.nombre,
-                'descripcion': ins.descripcion,
-                'carga_trabajo': ins.carga_trabajo
-            }
-            json.append(categoria)
-        return json
+    def obtener_categorias(self, idCategoria):
+        if int(idCategoria) in self.idcategorias:
+            for categoria in self.categorias:
+                if categoria.getidcategoria() == int(idCategoria):
+                    return categoria
+        return None
 
 
 ## FUNCIONES PARA CONFIGURACIONES

@@ -1,11 +1,12 @@
 class Configuracion():
-    def __init__(self, id, nombre, descripcion, cant_recursos):
+    def __init__(self, id, nombre, descripcion, cant_recursos, id_categoria):
         self.id = id
         self.nombre = nombre
         self.descripcion = descripcion
         self.cant_recursos = cant_recursos
+        self.idcategoria = id_categoria
 
-    def getid(self):
+    def getidconfiguracion(self):
         return self.id
         
     def getnombre(self):

@@ -141,26 +141,41 @@ def get_recursos():
 
 # METODOS PARA CATEGORIAS
 
+
 @app.route('/crearCategoria', methods = ['POST'])
 def crearCategoria():
     body = request.get_json()
     try:
         if("id" in body and "nombre" in body and "descripcion" in  body and "carga_trabajo" in body):
             categoria = Categoria(body["id"], body["nombre"],body["descripcion"],body["carga_trabajo"])
-            gestor.crear_categoria(categoria)
-            return{'msg': "Categoria creada exitosamente"}, 201 #created
+            if(gestor.crear_categoria(categoria)):
+                return{'msg': "Categoría creada exitosamente"}, 201 #created
+            else:
+                return{'msg': 'El id para esa categoría ya se encuentra registrada.'}, 406 #not acceptable
         else:
             return{'msg': 'Faltan campos por rellenar'},400 #bad request
     except:
         return {'msg': 'Ocurrió un error en el servidor'},500
- 
 
+
+
+'''
 @app.route('/consultarDatos/categoria', methods=['GET']) #-> consultarDatos GET
 def get_categorias():
     c=gestor.obtener_categorias()
     return jsonify(c),200
+'''
 
-
+@app.route('/consultarDatos/categoria/<id>', methods=['GET'])
+def get_categorias(id):
+    try:
+        categoria = gestor.obtener_categorias(id)
+        if (categoria != None):
+            return jsonify(categoria.getData()),200
+        else:
+            return {'msg': 'No se encontró la categoría'}, 404
+    except:
+        return {'msg': 'Ocurrió un error en el servidor'}, 500
 
 # METODOS PARA CONFIGURACIONES
 
@@ -168,10 +183,15 @@ def get_categorias():
 def crearConfiguracion():
     body = request.get_json()
     try:
-        if("id" in body and "nombre" in body and "descripcion" in  body and "cant_recursos" in body):
-            config = Configuracion(body["id"], body["nombre"],body["descripcion"],body["cant_recursos"])
-            gestor.crear_configuracion(config)
-            return{'msg': "Configuracion creado exitosamente"}, 201 #created
+        if("id" in body and "nombre" in body and "descripcion" in  body and "cant_recursos" in body and "id_categoria" in body):
+            categoria = gestor.obtener_categorias((body["id_categoria"]))
+            if (categoria != None):
+                config = Configuracion(body["id"], body["nombre"],body["descripcion"],body["cant_recursos"],body["id_categoria"])
+                categoria.crear_configuracion(config)
+                gestor.crear_configuracion(config)
+                return{'msg': "Configuracion creado exitosamente"}, 201 #created
+            else: 
+                return{'msg': 'Categoria con el id ingresado no existe'}, 406 #not acceptable
         else:
             return{'msg': 'Faltan campos por rellenar'},400 #bad request
     except:
@@ -251,6 +271,7 @@ def imprimir():
     return factura
 
 
+#METODOS PARA MOSTRAR LISTA DE CATEGORIAS Y
 
 
 
@@ -258,15 +279,13 @@ def imprimir():
 
 
 
-
-#CARGA DE ARCHIVO DE CONFIGURACION
+#CARGAR ARCHIVO CONFIGURACION XML
 @app.route('/cargarArchivo', methods = ['POST'])
-def cargarArchivo():
+def cargaCompleta():
     xml = request.data.decode('utf-8')
     raiz = ET.XML(xml)
-    body = request.get_json()
     for firstchild in raiz:
-        if(firstchild.tag.lower() == "listaRecursos"):
+        if(firstchild.tag.lower() == "listarecursos"):
             #en lista de recursos
             for recurso in firstchild:
                 id = recurso.attrib["id"]
@@ -280,24 +299,24 @@ def cargarArchivo():
                         metrica = params.text.strip()
                     elif(parametro == "tipo"):
                         tipo = params.text.strip()
-                    elif(parametro == "valorXhora"):
+                    elif(parametro == "valorxhora"):
                         valor = params.text.strip()
-                nuevorecurso = Recurso(body[id], body[nombre], body[abreviatura], body[metrica], body[tipo], body[valor])
-                gestor.crear_recurso(nuevorecurso)
-        elif(firstchild.tag.lower() == "listaCategorias"):
+                nrecurso = Recurso(id, nombre, abreviatura, metrica, tipo, valor)
+                gestor.crear_recurso(nrecurso)
+        elif(firstchild.tag.lower() == "listacategorias"):
             for categoria in firstchild:
-                id = categoria.attrib["id"]
+                id_categoria = categoria.attrib["id"]
                 for params in categoria:
                     parametro = params.tag.lower()
                     if(parametro == "nombre"):
                         nombre = params.text.strip()
                     elif(parametro == "descripcion"):
                         descripcion = params.text.strip()
-                    elif(parametro == "cargaTrabajo"):
+                    elif(parametro == "cargatrabajo"):
                         cargatrabajo = params.text.strip()
-                    elif(parametro == "listaConfiguraciones"):
-                        nuevacategoria = Categoria(body[id], body[nombre], body[descripcion], body[cargatrabajo])
-                        gestor.crear_categoria(nuevacategoria)
+                    elif(parametro == "listaconfiguraciones"):
+                        ncategoria = Categoria(id, nombre, descripcion,cargatrabajo)
+                        gestor.crear_categoria(ncategoria)
                         for configs in params:
                             idconfig = configs.attrib["id"]
                             for paramconfig in configs:
@@ -306,14 +325,12 @@ def cargarArchivo():
                                 elif(paramconfig.tag == "descripcion"):
                                     descripconfig = paramconfig.text.strip()
                                 elif(paramconfig.tag == "recursosConfiguracion"):
-                                    nuevaconfig = Configuracion(body[idconfig],body[nombreconfig], body[descripconfig])
-                                    gestor.crear_configuracion(nuevaconfig)
                                     for nrecur in paramconfig:
                                         idrecur = nrecur.attrib["id"]
-                                        cantidad = nrecur.text.strip()
-                                        #gestor.asignar_recurso(idconfig,idrecur,cantidad)
-                            #gestor.asignarConfiguracion(id, idconfig)
-        elif(firstchild.tag.lower() == "listaClientes"):
+                                        cantidad = nrecur.text.strip()                                    
+                                    nconfig = Configuracion(idconfig,nombreconfig, descripconfig, cantidad,id_categoria)
+                                    gestor.crear_configuracion(nconfig)
+        elif(firstchild.tag.lower() == "listaclientes"):
             for clientes in firstchild:
                 nit = clientes.attrib["nit"]
                 for params in clientes:
@@ -326,11 +343,11 @@ def cargarArchivo():
                         clave = params.text.strip()
                     elif(parametro == "direccion"):
                         direccion = params.text.strip()
-                    elif(parametro == "correoElectronico"):
+                    elif(parametro == "correoelectronico"):
                         mail = params.text.strip()
-                    elif(parametro == "listaInstancias"):
-                        nuevocliente = Cliente(body[nit], body[nombre], body[usuario], body[clave], body[direccion], body[mail])
-                        gestor.agregar_cliente(nuevocliente)
+                    elif(parametro == "listainstancias"):
+                        ncliente = Cliente(id, nombre, usuario, clave, direccion, mail)
+                        gestor.agregar_cliente(ncliente)
                         for instancia in params:
                             idinstancia = instancia.attrib["id"]
                             for paraminstancia in instancia:
@@ -344,8 +361,8 @@ def cargarArchivo():
                                     estado = paraminstancia.text.strip()
                                 elif(paraminstancia.tag == "fechaFinal"):
                                     fechafin = paraminstancia.text.strip()
-                            nuevainstancia = Instancia(body[idinstancia],body[nombreins],body[idconfig],body[fechainicio],body[fechafin],body[estado],body[nit])
-                            gestor.crear_instancia(nuevainstancia)
+                            ninstancia = Instancia(idinstancia, nombreins, idconfig, fechainicio, fechafin, estado, nit)
+                            gestor.crear_instancia(ninstancia)
     return {'msg': 'Se ha completado la carga de todos los datos'},200
 
 
