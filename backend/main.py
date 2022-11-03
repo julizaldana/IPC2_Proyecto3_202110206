@@ -28,21 +28,12 @@ def index():
 
 
 #LOGIN
-@app.route('/login', methods=['POST'])
-def login():
-    body = request.get_json()
-    try:
-        if("usuario" in body and "clave" in body):
-            if(body["usuario"] != "" and body["clave"] != ""):
-                if(gestor.login(body["usuario"],body["clave"])):
-                    return {'msg': 'Bienvenido! Sesión iniciada correctamente'}, 200
-                else:
-                    return{'msg': 'Usuario o clave son incorrectas.'}, 406 #not acceptable
-            pass
-    except:
-        return {'msg' : 'Ocurrió un error en el servidor'}, 500
-
-
+@app.route('/login/<user>/<password>')
+def login(user=None,password=None):
+    res=gestor.obtener_usuario(user,password)
+    if res==None:
+        return '{"data":false,"message":"Tu usuario no existe o es invalido"}'
+    return '{"data":true,"message":"¡Bienvenido!"}'
 
 
 
@@ -98,8 +89,10 @@ def crearInstancia():
             if (cliente != None):
                 instancia = Instancia(body['id'],body['nombre'],body['idconfig'],body['fecha_inicial'],body['fecha_final'],body['estado'],body['nit'])
                 cliente.crear_instancia(instancia)                
-                gestor.crear_instancia(instancia)
-                return{'msg': "Instancia creada exitosamente"}, 201 #created
+                if(gestor.crear_instancia(instancia)):
+                    return{'msg': "Instancia creada exitosamente"}, 201 #created
+                else:
+                    return{'msg': 'El id de la instancia ya existe.'}, 406 #not acceptable
             else:
                 return{'msg': 'Cliente con nit ingresado no existe'}, 406 #not acceptable
         else:
@@ -221,6 +214,22 @@ def crearConsumo():
 
 
 
+@app.route('/consultarDatos/consumo/<nit>/<idinstancia>', methods=['GET'])
+def ver_consumo(nit,idinstancia):
+    try:
+        cliente = gestor.obtener_clientes(nit)
+        instancia = gestor.obtener_instancias(idinstancia)
+        consumo = gestor.obtener_consumo()
+        if (cliente != None) and (instancia != None):
+            return jsonify(consumo.getData()),200
+        else:
+            return {'msg': 'No se encontró el cliente o la instancia'}, 404
+    except:
+        return {'msg': 'Ocurrió un error en el servidor'}, 500
+
+
+
+
 
 #METODOS PARA GENERACION DE FACTURA
 
@@ -271,12 +280,59 @@ def imprimir():
     return factura
 
 
-#METODOS PARA MOSTRAR LISTA DE CATEGORIAS Y
+#METODOS PARA MOSTRAR LISTA DE CATEGORIAS Y CONFIGURACIONES
+
+@app.route('/verListas/categorias/<idcat>', methods=['GET'])
+def ver_analisis(idcat):
+    try:
+        categ=gestor.obtener_categorias(idcat)
+        if (categ != None):
+            f = open("lista_analisis1.txt", "a")
+            print(categ.getData(), file=f)
+            f.close()
+            pdf.add_page()
+            pdf.texts('lista_analisis1.txt')
+            pdf.titles("ANALISIS DE LISTAS DE CATEGORIAS Y CONFIGURACIONES")
+            pdf.set_author('Julio Zaldaña')
+            pdf.output('lista_analisis1.pdf','F')
+            return categ.getData(),200
+        else: 
+            return {'msg': 'No se encontró la categoría'},404   
+    except:
+        return {'msg': 'Ocurrió un error en el servidor'},500
+
+
+
+
+#METODOS PARA MOSTRAR LISTA DE RECURSOS MAS UTILIZADOS
+
+
+@app.route('/verRecursos', methods=['GET'])
+def ver_recursos():
+    try:
+        listarec = gestor.obtener_recursos()
+        f = open("factura.txt", "a")
+        print(listarec, file=f)
+        f.close()
+        pdf.add_page()
+        pdf.texts('lista_analisis2.txt')
+        pdf.titles("ANALISIS DE LISTA DE RECURSOS MAS UTILIZADOS")
+        pdf.set_author('Julio Zaldaña')
+        pdf.output('lista_analisis2.pdf','F')
+        return jsonify(listarec), 200         
+    except:
+        return {'msg': 'Ocurrió un error en el servidor'},500
 
 
 
 
 
+'''
+@app.route('/consultarDatos/categoria', methods=['GET']) #-> consultarDatos GET
+def get_categorias():
+    c=gestor.obtener_categorias()
+    return jsonify(c),200
+'''
 
 
 #CARGAR ARCHIVO CONFIGURACION XML
@@ -315,7 +371,7 @@ def cargaCompleta():
                     elif(parametro == "cargatrabajo"):
                         cargatrabajo = params.text.strip()
                     elif(parametro == "listaconfiguraciones"):
-                        ncategoria = Categoria(id, nombre, descripcion,cargatrabajo)
+                        ncategoria = Categoria(id_categoria, nombre, descripcion,cargatrabajo)
                         gestor.crear_categoria(ncategoria)
                         for configs in params:
                             idconfig = configs.attrib["id"]
@@ -346,7 +402,7 @@ def cargaCompleta():
                     elif(parametro == "correoelectronico"):
                         mail = params.text.strip()
                     elif(parametro == "listainstancias"):
-                        ncliente = Cliente(id, nombre, usuario, clave, direccion, mail)
+                        ncliente = Cliente(nit, nombre, usuario, clave, direccion, mail)
                         gestor.agregar_cliente(ncliente)
                         for instancia in params:
                             idinstancia = instancia.attrib["id"]

@@ -8,6 +8,7 @@ class Gestor:
         self.clientes = []
         self.nitclientes = []
         self.instancias = []
+        self.idinstancias = []
         self.recursos = []
         self.configuraciones= []
         self.categorias = []
@@ -28,9 +29,9 @@ class Gestor:
 
 
     def obtener_clientes(self, nitClient):
-        if int(nitClient) in self.nitclientes:
+        if nitClient in self.nitclientes:
             for client in self.clientes:
-                if client.getnit() == int(nitClient):
+                if client.getnit() == nitClient:
                     return client
         return None
 
@@ -39,8 +40,11 @@ class Gestor:
 ## FUNCIONES PARA INSTANCIAS
 
     def crear_instancia(self,instancia):
-        self.instancias.append(instancia)
-        return True
+        if not(instancia.getidinstancia() in self.idinstancias):
+            self.instancias.append(instancia)
+            self.idinstancias.append(instancia.getidinstancia())
+            return True
+        return False
 
     def validar_fecha(date_text):
         try:
@@ -82,9 +86,9 @@ class Gestor:
         return False
 
     def obtener_categorias(self, idCategoria):
-        if int(idCategoria) in self.idcategorias:
+        if idCategoria in self.idcategorias:
             for categoria in self.categorias:
-                if categoria.getidcategoria() == int(idCategoria):
+                if categoria.getidcategoria() == idCategoria:
                     return categoria
         return None
 
@@ -139,6 +143,13 @@ class Gestor:
         self.consumos.append(consumo)
         return True
 
+    def obtener_consumo(self,nitCliente,idInstancia):
+        if nitCliente in self.nitclientes and idInstancia in self.idinstancias:
+            for consumo in self.consumos:
+                if consumo.getnitcliente() == nitCliente and consumo.getidinstancia() == idInstancia:
+                    return consumo
+        return None
+
 
 
 # FUNCIONES PARA FACTURAS
@@ -158,3 +169,18 @@ class Gestor:
         for factura in self.facturas:
             print(factura)
         return None
+
+
+    def obtener_listacategorias(self):
+        json=[]
+        for i in self.idcategorias:
+            categoria={
+            "id": i.id,
+            "nombre": i.nombre,
+            "descripcion": i.descripcion,
+            "carga_trabajo": i.carga_trabajo,
+            "configuraciones": i.list_configuraciones
+            }
+            json.append(categoria)
+        return json
+
