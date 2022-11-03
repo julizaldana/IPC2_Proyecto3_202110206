@@ -7,10 +7,14 @@ class Cliente():
         self.__direccion = direccion
         self.__email = email
         self.instancias=[]
+        self.facturas=[]
 
 
     def crear_instancia(self, instancia):
         self.instancias.append(instancia)
+    
+    def generar_factura(self, factura):
+        self.facturas.append(factura)
 
     def getnit(self):
         return self.__nit

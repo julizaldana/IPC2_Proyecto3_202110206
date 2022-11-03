@@ -12,6 +12,7 @@ class Gestor:
         self.configuraciones= []
         self.categorias = []
         self.consumos = []
+        self.facturas = []
 
 
 
@@ -140,3 +141,23 @@ class Gestor:
     def crear_consumo(self,consumo):
         self.consumos.append(consumo)
         return True
+
+
+
+# FUNCIONES PARA FACTURAS
+
+    def generar_factura(self,factura):
+        self.facturas.append(factura)
+        return True
+    
+    def obtener_factura(self,uuidFactura):
+        #Retorna una factura de la lista de facturas, usando como referencia el identificador único de factura
+        for factura in self.facturas:
+            if str(factura.getUuid()) == uuidFactura:
+                return factura
+        return None
+
+    def imprimir_factura(self):
+        for factura in self.facturas:
+            print(factura)
+        return None

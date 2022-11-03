@@ -8,6 +8,9 @@ from recurso.models.recurso import Recurso
 from configuracion.models.configuracion import Configuracion
 from categoria.models.categoria import Categoria
 from consumos.models.consumo import Consumo
+from factura.models.factura import Factura
+from generarfacturas import PDF
+ #Clase fpdf
 
 from gestor import Gestor
 from xml.etree import ElementTree as ET
@@ -16,10 +19,31 @@ app = Flask(__name__)
 CORS(app)
 
 gestor=Gestor()
+pdf = PDF()
+
 
 @app.route('/')
 def index():
     return {"msg" : "This api works!"}
+
+
+#LOGIN
+@app.route('/login', methods=['POST'])
+def login():
+    body = request.get_json()
+    try:
+        if("usuario" in body and "clave" in body):
+            if(body["usuario"] != "" and body["clave"] != ""):
+                if(gestor.login(body["usuario"],body["clave"])):
+                    return {'msg': 'Bienvenido! Sesión iniciada correctamente'}, 200
+                else:
+                    return{'msg': 'Usuario o clave son incorrectas.'}, 406 #not acceptable
+            pass
+    except:
+        return {'msg' : 'Ocurrió un error en el servidor'}, 500
+
+
+
 
 
 #METODOS PARA CLIENTES
@@ -52,23 +76,6 @@ def ver(nit):
     except:
         return {'msg': 'Ocurrió un error en el servidor'}, 500
 
-
-tree = ET.parse('ArchivoConfig.xml')
-root = tree.getroot()
-
-#Cargar archivo
-@app.route('/crearClientes', methods=['POST'])
-def crearClientes():
-    json=request.get_json()
-    for client in root.iter('cliente'):
-        nit = client.get('nit')
-        nombre = client.find('nombre').text
-        usuario = client.find('usuario').text
-        clave = client.find('clave').text
-        direccion = client.find('direccion').text
-        email = client.find('correoElectronico').text
-        gestor.agregar_cliente(json[nit],json[nombre],json[usuario],json[clave],json[direccion],json[email])
-        return jsonify({'ok':True, 'msg':'Clientes cargados con exito'}),200
 
 
 #METODOS PARA INSTANCIAS
@@ -196,6 +203,56 @@ def crearConsumo():
 
 
 #METODOS PARA GENERACION DE FACTURA
+
+
+@app.route('/generarFactura', methods = ['POST'])
+def generarFactura():
+    body=request.get_json()
+    try:
+        if ("nit" in body and "fecha" in body and "monto" in body):
+            cliente = gestor.obtener_clientes(body["nit"])
+            if (cliente != None):
+                factura = Factura(body["nit"], body["fecha"], body["monto"])
+                cliente.generar_factura(factura)
+                gestor.generar_factura(factura)
+                return {'msg': f"Factura id. '{factura.getUuid()}' creada exitosamente"}, 201
+            else:
+                return {'msg': 'Cliente con nit ingresado no existe'}, 404
+        else:
+            return {'msg': 'Faltan campos en la petición'}, 400
+    except:
+        return {'msg': 'Ocurrió un error en el servidor'}, 500
+
+
+@app.route('/verFactura/<factura>', methods=['GET'])
+def view(factura):
+    try:
+        factura = gestor.obtener_factura(factura)
+        if (factura != None):
+            f = open("factura.txt", "a")
+            print(factura.getData(), file=f)
+            f.close()
+            pdf.add_page()
+            pdf.texts('factura.txt')
+            pdf.titles("GENERACIÓN DE FACTURA")
+            pdf.set_author('Julio Zaldaña')
+            pdf.output('factura.pdf','F')
+            return factura.getData(), 200         
+        else: 
+            return {'msg': 'No se encontró la factura'},404
+    except:
+        return {'msg': 'Ocurrió un error en el servidor'},500
+
+
+
+@app.route('/imprimirFactura', methods=['POST'])
+def imprimir():
+    factura = gestor.imprimir_factura()
+    return factura
+
+
+
+
 
 
 
